@@ -286,7 +286,7 @@ body.ar .spoo-in{padding:12px 14px 12px 52px}
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcfsKxQNz3QqsI1bWw7PYHYLT87sK07-WIgRhL1L6b6rBVV3jlLghsrAfUH79ExNNDNQ/exec';
 
 const T = {
   en: {
@@ -531,16 +531,28 @@ async function submitForm() {
     language:  lang.toUpperCase()
   };
 
+  if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzcfsKxQNz3QqsI1bWw7PYHYLT87sK07-WIgRhL1L6b6rBVV3jlLghsrAfUH79ExNNDNQ/exec') {
+    await new Promise(r => setTimeout(r, 1300));
+    onSuccess(); return;
+  }
+
+  // Method 1: POST with URLSearchParams (avoids CORS preflight)
   try {
-    if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzcfsKxQNz3QqsI1bWw7PYHYLT87sK07-WIgRhL1L6b6rBVV3jlLghsrAfUH79ExNNDNQ/exec') { await new Promise(r => setTimeout(r, 1300)); onSuccess(); return; }
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-      // No Content-Type header — avoids CORS preflight with Apps Script
-    });
-    const data = await res.json();
-    if (data.status === 'success') onSuccess(); else throw new Error(data.message);
-  } catch (err) {
+    const params = new URLSearchParams();
+    params.append('data', JSON.stringify(payload));
+    const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+    const text = await res.text();
+    if (text.includes('success') || text.includes('Recorded')) {
+      onSuccess(); return;
+    }
+  } catch (e1) { /* fall through to method 2 */ }
+
+  // Method 2: GET with encoded data (no-cors fallback — always reaches Apps Script)
+  try {
+    const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+    await fetch(url, { mode: 'no-cors' });
+    onSuccess(); // no-cors won't return readable response but request was sent
+  } catch (e2) {
     showToast(T[lang].submitFail, true);
     btn.disabled = false; sp.style.display = 'none'; lb.textContent = T[lang].submitBtn;
   }

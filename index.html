@@ -286,7 +286,7 @@ body.ar .spoo-in{padding:12px 14px 12px 52px}
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcfsKxQNz3QqsI1bWw7PYHYLT87sK07-WIgRhL1L6b6rBVV3jlLghsrAfUH79ExNNDNQ/exec';
+const SCRIPT_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMWy_bXnzPFR9ZzRAJylR4ok7g8OirhCsKAtvyu-uMTMgl2oxR7DfZzodo3nWaI-o-A5qwjv-7MZnY_nX3oUfT3_LlEWGcvok3ga4ofuoKB1-kHg5igUs2iQrCS4zl32Ast6YrZgJqtxP8vtTD72L6r9XVNgUHBQML0ohV_COb56-Y5JHps4QFiDb5qWlqxvm1AVLrEl1NKebeU4hZsYWzKrf5QT2sbwz6-ScwhyMPv4qwuGof-0d-_qmmD6lgKe_JeMBuoMAnAzgxSC8kNSWACyZ5EcHjcpFjDm78qa&lib=MP3FuNatm5gQrW4tGIp8nwxG6jo25ZPrw';
 
 const T = {
   en: {
@@ -531,28 +531,22 @@ async function submitForm() {
     language:  lang.toUpperCase()
   };
 
-  if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzcfsKxQNz3QqsI1bWw7PYHYLT87sK07-WIgRhL1L6b6rBVV3jlLghsrAfUH79ExNNDNQ/exec') {
+  if (SCRIPT_URL === 'https://script.googleusercontent.com/macros/echo?user_content_key=AWDtjMWy_bXnzPFR9ZzRAJylR4ok7g8OirhCsKAtvyu-uMTMgl2oxR7DfZzodo3nWaI-o-A5qwjv-7MZnY_nX3oUfT3_LlEWGcvok3ga4ofuoKB1-kHg5igUs2iQrCS4zl32Ast6YrZgJqtxP8vtTD72L6r9XVNgUHBQML0ohV_COb56-Y5JHps4QFiDb5qWlqxvm1AVLrEl1NKebeU4hZsYWzKrf5QT2sbwz6-ScwhyMPv4qwuGof-0d-_qmmD6lgKe_JeMBuoMAnAzgxSC8kNSWACyZ5EcHjcpFjDm78qa&lib=MP3FuNatm5gQrW4tGIp8nwxG6jo25ZPrw') {
     await new Promise(r => setTimeout(r, 1300));
     onSuccess(); return;
   }
 
-  // Method 1: POST with URLSearchParams (avoids CORS preflight)
   try {
-    const params = new URLSearchParams();
-    params.append('data', JSON.stringify(payload));
-    const res = await fetch(SCRIPT_URL, { method: 'POST', body: params });
-    const text = await res.text();
-    if (text.includes('success') || text.includes('Recorded')) {
-      onSuccess(); return;
-    }
-  } catch (e1) { /* fall through to method 2 */ }
-
-  // Method 2: GET with encoded data (no-cors fallback — always reaches Apps Script)
-  try {
+    // Send as GET request with data in URL — most reliable method with Google Apps Script
     const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
-    await fetch(url, { mode: 'no-cors' });
-    onSuccess(); // no-cors won't return readable response but request was sent
-  } catch (e2) {
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.status === 'success') {
+      onSuccess();
+    } else {
+      throw new Error(json.message || 'Unknown error');
+    }
+  } catch (err) {
     showToast(T[lang].submitFail, true);
     btn.disabled = false; sp.style.display = 'none'; lb.textContent = T[lang].submitBtn;
   }

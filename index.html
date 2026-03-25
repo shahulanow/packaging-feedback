@@ -520,18 +520,24 @@ async function submitForm() {
   if (!validate()) { document.querySelector('.has-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
   const btn = document.getElementById('submitBtn'), sp = document.getElementById('spinner'), lb = document.getElementById('submitLabel');
   btn.disabled = true; sp.style.display = 'block'; lb.textContent = T[lang].submitting;
-  const fd = new FormData();
-  fd.append('timestamp', new Date().toISOString());
-  fd.append('spoo',     document.getElementById('spooInput').value.trim());
-  fd.append('issue',    document.querySelector('#issueGroup .sel input').value);
-  fd.append('bagSize',  document.querySelector('#sizeGroup .sel input').value);
-  fd.append('country',  document.querySelector('#countryGroup .sel input').value);
-  fd.append('comments', document.getElementById('comments').value.trim());
-  fd.append('language', lang.toUpperCase());
-  photoFiles.forEach((f, i) => fd.append('photo_' + i, f, f.name));
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    spoo:      document.getElementById('spooInput').value.trim(),
+    issue:     document.querySelector('#issueGroup .sel input').value,
+    bagSize:   document.querySelector('#sizeGroup .sel input').value,
+    country:   document.querySelector('#countryGroup .sel input').value,
+    comments:  document.getElementById('comments').value.trim(),
+    language:  lang.toUpperCase()
+  };
+
   try {
-    if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') { await new Promise(r => setTimeout(r, 1300)); onSuccess(); return; }
-    const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd });
+    if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzcfsKxQNz3QqsI1bWw7PYHYLT87sK07-WIgRhL1L6b6rBVV3jlLghsrAfUH79ExNNDNQ/exec') { await new Promise(r => setTimeout(r, 1300)); onSuccess(); return; }
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+      // No Content-Type header — avoids CORS preflight with Apps Script
+    });
     const data = await res.json();
     if (data.status === 'success') onSuccess(); else throw new Error(data.message);
   } catch (err) {

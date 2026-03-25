@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Anow Packaging Feedback</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/index.min.js"></script>
+<style>
+:root{
+  --orange:#FF9900; --orange-dk:#e68a00; --orange-lt:#fff8ed;
+  --blue:#146EB4; --blue-dk:#0f5a96; --blue-deep:#0a2d4a; --blue-lt:#e8f3fb;
+  --text:#0F1111; --muted:#565959; --border:#d5d9d9;
+  --bg:#f7f8f8; --white:#fff; --danger:#cc0c39; --success:#067D62;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;font-family:'Nunito',sans-serif}
+body.ar{font-family:'Tajawal',sans-serif;font-size:105%}
+
+/* ── HEADER ── */
+header{background:var(--blue-deep);position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.hinner{max-width:560px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:13px 16px;gap:12px}
+.htitle-wrap{display:flex;flex-direction:column}
+.htitle{font-size:16px;font-weight:800;color:#fff;line-height:1.2;letter-spacing:-.2px}
+.hsub{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-top:3px}
+
+/* ── LANG TOGGLE ── */
+.lang-toggle{display:flex;align-items:center;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:99px;padding:3px;gap:2px;flex-shrink:0}
+.lbtn{padding:5px 13px;border-radius:99px;font-size:12.5px;font-weight:800;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.55);transition:all .22s;letter-spacing:.03em}
+.lbtn.active{background:var(--orange);color:var(--blue-deep);box-shadow:0 2px 8px rgba(255,153,0,.4)}
+.lbtn:not(.active):hover{color:#fff}
+.lbtn-ar{font-family:'Tajawal',sans-serif}
+
+/* ── SHIMMER STRIP ── */
+.strip{height:4px;background:linear-gradient(90deg,var(--orange-dk),var(--orange),#ffcc66,var(--orange),var(--orange-dk));background-size:300% 100%;animation:shimmer 2.5s linear infinite}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:300%}}
+
+/* ── PROGRESS ── */
+.prog-wrap{background:var(--blue-deep);padding:10px 16px 14px}
+.prog-track{max-width:560px;margin:0 auto}
+.prog-info{display:flex;justify-content:space-between;margin-bottom:6px}
+.prog-lbl{font-size:11px;color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.prog-pct{font-size:12px;font-weight:800;color:var(--orange)}
+.prog-bar{height:5px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--orange),#ffcc44);border-radius:99px;width:0%;transition:width .45s cubic-bezier(.4,0,.2,1)}
+
+/* ── CONTAINER ── */
+.wrap{max-width:560px;margin:0 auto;padding:20px 14px 0}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);animation:fadeUp .38s ease both}
+.card:nth-child(1){animation-delay:.04s}.card:nth-child(2){animation-delay:.08s}
+.card:nth-child(3){animation-delay:.12s}.card:nth-child(4){animation-delay:.16s}
+.card:nth-child(5){animation-delay:.2s} .card:nth-child(6){animation-delay:.24s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card.has-error{border-color:var(--danger);border-width:2px}
+
+.flabel{font-size:14px;font-weight:800;color:var(--text);margin-bottom:14px;display:flex;align-items:flex-start;gap:5px;line-height:1.4}
+.req{color:var(--danger);flex-shrink:0}
+.opt-tag{font-size:10px;font-weight:700;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;text-transform:uppercase;letter-spacing:.07em;margin-inline-start:4px;align-self:center}
+
+/* ── PHOTO ZONE ── */
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.pbtn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:20px 10px;border:2px dashed var(--border);border-radius:var(--r);background:var(--bg);cursor:pointer;text-align:center;transition:all .18s}
+.pbtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.pbtn:hover{border-color:var(--orange);background:var(--orange-lt)}
+.pbtn .pico{font-size:28px}
+.pbtn .plbl{font-size:12px;font-weight:800;color:var(--blue)}
+.pbtn .psub{font-size:10.5px;color:var(--muted);font-weight:600}
+.prev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.prev-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:2.5px solid var(--orange);box-shadow:0 2px 8px rgba(255,153,0,.22)}
+.prev-item img{width:100%;height:100%;object-fit:cover;display:block}
+.rm-photo{position:absolute;top:4px;inset-inline-end:4px;width:22px;height:22px;background:rgba(0,0,0,.62);color:#fff;border:none;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-badge{display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--success);background:#e6f4f0;border-radius:6px;padding:5px 12px;margin-top:10px}
+
+/* ── SPOO ── */
+.spoo-wrap{position:relative}
+.spoo-in{width:100%;padding:12px 52px 12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:16px;font-weight:700;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.06em}
+body.ar .spoo-in{padding:12px 14px 12px 52px}
+.spoo-in:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(20,110,180,.13)}
+.scan-btn{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);background:var(--orange);color:#111;border:none;border-radius:6px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,153,0,.38);transition:background .18s,transform .1s}
+.scan-btn:hover{background:var(--orange-dk)}
+.scan-btn:active{transform:translateY(-50%) scale(.9)}
+.scan-hint{font-size:11px;color:var(--muted);font-weight:600;margin-top:7px}
+
+/* ── RADIO ── */
+.rgroup{display:flex;flex-direction:column;gap:9px}
+.ropt{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;user-select:none;background:var(--bg)}
+.ropt:hover{border-color:var(--orange);background:var(--orange-lt)}
+.ropt.sel{border-color:var(--blue);background:var(--blue-lt)}
+.ropt input{display:none}
+.rdot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--white);transition:border-color .15s}
+.ropt.sel .rdot{border-color:var(--blue)}
+.rdot::after{content:'';width:10px;height:10px;background:var(--blue);border-radius:50%;opacity:0;transform:scale(.4);transition:opacity .15s,transform .2s cubic-bezier(.34,1.56,.64,1)}
+.ropt.sel .rdot::after{opacity:1;transform:scale(1)}
+.rtxt{font-size:13.5px;font-weight:600;line-height:1.3;flex:1}
+
+/* ── TEXTAREA ── */
+.tarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;color:var(--text);background:var(--bg);outline:none;resize:vertical;min-height:96px;transition:border-color .2s,box-shadow .2s}
+.tarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(20,110,180,.13)}
+.tarea::placeholder{color:#adb1b8}
+
+/* ── ERRORS ── */
+.errmsg{font-size:12px;color:var(--danger);font-weight:700;margin-top:8px;display:none}
+
+/* ── SUBMIT ── */
+.sub-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--orange) 0%,#ffb84d 100%);color:#111;border:none;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(255,153,0,.32);transition:all .2s;position:relative;overflow:hidden}
+.sub-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.16),transparent);pointer-events:none}
+.sub-btn:hover{background:linear-gradient(135deg,var(--orange-dk),#e89f30);transform:translateY(-1px);box-shadow:0 6px 26px rgba(255,153,0,.48)}
+.sub-btn:active{transform:translateY(0)}
+.sub-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.spinner{width:17px;height:17px;border:2.5px solid rgba(0,0,0,.2);border-top-color:#111;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SCANNER MODAL ── */
+.scan-modal{display:none;position:fixed;inset:0;background:rgba(10,45,74,.93);z-index:200;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+.scan-modal.active{display:flex}
+.scan-box{width:min(360px,92vw);border-radius:16px;overflow:hidden;background:#000;position:relative;border:2.5px solid var(--orange);box-shadow:0 0 40px rgba(255,153,0,.28)}
+.scan-box video{width:100%;display:block;min-height:240px;object-fit:cover}
+.scan-over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-frame{width:210px;height:75px;border:2.5px solid var(--orange);border-radius:6px;box-shadow:0 0 0 2000px rgba(0,0,0,.48);position:relative}
+.scan-line{position:absolute;left:4px;right:4px;height:2.5px;background:linear-gradient(90deg,transparent,var(--orange),transparent);animation:scanMove 1.4s ease-in-out infinite}
+@keyframes scanMove{0%,100%{top:8%}50%{top:84%}}
+.scan-status{color:rgba(255,255,255,.8);font-size:12px;font-weight:700;margin-top:14px;text-align:center;min-height:18px;letter-spacing:.04em}
+.scan-close{margin-top:14px;padding:10px 32px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.28);border-radius:99px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;transition:background .2s}
+.scan-close:hover{background:rgba(255,255,255,.1)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--blue-deep);color:#fff;padding:13px 20px;border-radius:var(--r);font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.24);transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:300;border-inline-start:4px solid var(--orange);max-width:320px;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-inline-start-color:var(--danger);background:#5a0a1a}
+
+/* ── SUCCESS ── */
+.suc-screen{display:none;text-align:center;padding:60px 24px 40px}
+.suc-icon{width:80px;height:80px;background:linear-gradient(135deg,var(--orange),#ffcc44);border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 6px 24px rgba(255,153,0,.38);animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.suc-screen h2{font-size:24px;font-weight:800;color:var(--blue-deep);margin-bottom:10px}
+.suc-screen p{font-size:14px;color:var(--muted);line-height:1.65;font-weight:600;max-width:280px;margin:0 auto}
+.again-btn{margin-top:28px;padding:13px 32px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(20,110,180,.3);transition:background .2s,transform .1s}
+.again-btn:hover{background:var(--blue-dk);transform:translateY(-1px)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hinner">
+    <div class="htitle-wrap">
+      <div class="htitle" id="hTitle">Anow Packaging Feedback</div>
+      <div class="hsub">AMET · Hub Operations</div>
+    </div>
+    <div class="lang-toggle">
+      <button class="lbtn active" id="btnEN" onclick="setLang('en')">EN</button>
+      <button class="lbtn lbtn-ar" id="btnAR" onclick="setLang('ar')">ع</button>
+    </div>
+  </div>
+</header>
+<div class="strip"></div>
+
+<div class="prog-wrap">
+  <div class="prog-track">
+    <div class="prog-info">
+      <span class="prog-lbl" id="progLbl">Completion</span>
+      <span class="prog-pct" id="pctLabel">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+  </div>
+</div>
+
+<div class="wrap">
+<div id="formView">
+
+  <!-- 1. PHOTO -->
+  <div class="card" id="card-photo">
+    <div class="flabel"><span class="req">*</span> <span data-t="photoLabel">Take / Upload a photo of the damage</span></div>
+    <div class="photo-btns">
+      <div class="pbtn">
+        <input type="file" accept="image/*" capture="environment" multiple onchange="handlePhotos(event)"/>
+        <span class="pico">📷</span>
+        <span class="plbl" data-t="takePhoto">Take Photo</span>
+        <span class="psub" data-t="useCamera">Use camera</span>
+      </div>
+      <div class="pbtn">
+        <input type="file" accept="image/*" multiple onchange="handlePhotos(event)"/>
+        <span class="pico">🖼️</span>
+        <span class="plbl" data-t="uploadImg">Upload Image</span>
+        <span class="psub" data-t="fromGallery">From gallery / files</span>
+      </div>
+    </div>
+    <div class="prev-grid" id="prevGrid"></div>
+    <div class="photo-badge" id="photoBadge">✓ <span id="photoTxt"></span></div>
+    <div class="errmsg" id="err-photo"></div>
+  </div>
+
+  <!-- 2. SPOO# -->
+  <div class="card" id="card-spoo">
+    <div class="flabel"><span class="req">*</span> <span data-t="spooLabel">SPOO# of Old bag which was damaged</span></div>
+    <div class="spoo-wrap">
+      <input class="spoo-in" type="text" id="spooInput" oninput="clearErr('spoo');updateProg()"/>
+      <button class="scan-btn" onclick="openScanner()" title="Scan barcode">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <line x1="7" y1="8" x2="7" y2="16"/><line x1="10.5" y1="8" x2="10.5" y2="16"/>
+          <line x1="14" y1="8" x2="14" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/>
+        </svg>
+      </button>
+    </div>
+    <div class="scan-hint" data-t="scanHint">Tap the scan button to use your camera, or type manually</div>
+    <div class="errmsg" id="err-spoo"></div>
+  </div>
+
+  <!-- 3. WHAT WENT WRONG -->
+  <div class="card" id="card-issue">
+    <div class="flabel"><span class="req">*</span> <span data-t="issueLabel">What went wrong?</span></div>
+    <div class="rgroup" id="issueGroup">
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Brown Bag damage due to chilled item"/><div class="rdot"></div><span class="rtxt" data-t="issue1">Brown Bag damage due to chilled item</span></label>
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Brown Bag tear due to heavy items"/><div class="rdot"></div><span class="rtxt" data-t="issue2">Brown Bag tear due to heavy items</span></label>
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Bag handle broke"/><div class="rdot"></div><span class="rtxt" data-t="issue3">Bag handle broke</span></label>
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Seal Tape quality is poor"/><div class="rdot"></div><span class="rtxt" data-t="issue4">Seal Tape quality is poor</span></label>
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Bubble Pouch quality is poor"/><div class="rdot"></div><span class="rtxt" data-t="issue5">Bubble Pouch quality is poor</span></label>
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Thermal Bag quality is poor"/><div class="rdot"></div><span class="rtxt" data-t="issue6">Thermal Bag quality is poor</span></label>
+      <label class="ropt" onclick="pick(this,'issueGroup','issue')"><input type="radio" name="issue" value="Extra Brown Bag Used for SIOC item"/><div class="rdot"></div><span class="rtxt" data-t="issue7">Extra Brown Bag Used for SIOC item</span></label>
+    </div>
+    <div class="errmsg" id="err-issue"></div>
+  </div>
+
+  <!-- 4. BAG SIZE -->
+  <div class="card" id="card-size">
+    <div class="flabel"><span class="req">*</span> <span data-t="sizeLabel">Select bag size</span></div>
+    <div class="rgroup" id="sizeGroup">
+      <label class="ropt" onclick="pick(this,'sizeGroup','size')"><input type="radio" name="bagSize" value="Small Brown Bag"/><div class="rdot"></div><span class="rtxt" data-t="size1">Small Brown Bag</span></label>
+      <label class="ropt" onclick="pick(this,'sizeGroup','size')"><input type="radio" name="bagSize" value="Large Brown Bag"/><div class="rdot"></div><span class="rtxt" data-t="size2">Large Brown Bag</span></label>
+    </div>
+    <div class="errmsg" id="err-size"></div>
+  </div>
+
+  <!-- 5. COUNTRY -->
+  <div class="card" id="card-country">
+    <div class="flabel"><span class="req">*</span> <span data-t="countryLabel">Choose the country</span></div>
+    <div class="rgroup" id="countryGroup">
+      <label class="ropt" onclick="pick(this,'countryGroup','country')"><input type="radio" name="country" value="UAE"/><div class="rdot"></div><span class="rtxt">🇦🇪 &nbsp;UAE</span></label>
+      <label class="ropt" onclick="pick(this,'countryGroup','country')"><input type="radio" name="country" value="KSA"/><div class="rdot"></div><span class="rtxt">🇸🇦 &nbsp;KSA</span></label>
+      <label class="ropt" onclick="pick(this,'countryGroup','country')"><input type="radio" name="country" value="EGY"/><div class="rdot"></div><span class="rtxt">🇪🇬 &nbsp;EGY</span></label>
+    </div>
+    <div class="errmsg" id="err-country"></div>
+  </div>
+
+  <!-- 6. COMMENTS -->
+  <div class="card">
+    <div class="flabel"><span data-t="commentsLabel">Tell us more about what happened</span> <span class="opt-tag" data-t="optional">optional</span></div>
+    <textarea class="tarea" id="comments" rows="4"></textarea>
+  </div>
+
+  <button class="sub-btn" id="submitBtn" onclick="submitForm()">
+    <span class="spinner" id="spinner"></span>
+    <span id="submitLabel" data-t="submitBtn">Submit Feedback →</span>
+  </button>
+
+</div><!-- /formView -->
+
+<!-- SUCCESS -->
+<div class="suc-screen" id="successScreen">
+  <div class="suc-icon">✓</div>
+  <h2 data-t="successTitle">Feedback Submitted!</h2>
+  <p data-t="successMsg">Your packaging feedback has been recorded and will help improve quality across AMET hubs.</p>
+  <br/>
+  <button class="again-btn" onclick="resetForm()" data-t="submitAnother">Submit Another Response</button>
+</div>
+</div><!-- /wrap -->
+
+<!-- SCANNER MODAL -->
+<div class="scan-modal" id="scanModal">
+  <div class="scan-box">
+    <video id="scanVideo" autoplay playsinline muted></video>
+    <div class="scan-over"><div class="scan-frame"><div class="scan-line"></div></div></div>
+  </div>
+  <div class="scan-status" id="scanStatus"></div>
+  <button class="scan-close" onclick="closeScanner()" data-t="cancel">✕ &nbsp;Cancel</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────
+const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+// ───────────────────────────────────────────────────────
+
+// ── TRANSLATIONS ───────────────────────────────────────
+const T = {
+  en: {
+    hTitle:        'Anow Packaging Feedback',
+    progLbl:       'Completion',
+    photoLabel:    'Take / Upload a photo of the damage',
+    takePhoto:     'Take Photo',
+    useCamera:     'Use camera',
+    uploadImg:     'Upload Image',
+    fromGallery:   'From gallery / files',
+    spooLabel:     'SPOO# of Old bag which was damaged',
+    spooPlaceholder:'Scan barcode or type SPOO#',
+    scanHint:      'Tap the scan button to use your camera, or type manually',
+    issueLabel:    'What went wrong?',
+    issue1:        'Brown Bag damage due to chilled item',
+    issue2:        'Brown Bag tear due to heavy items',
+    issue3:        'Bag handle broke',
+    issue4:        'Seal Tape quality is poor',
+    issue5:        'Bubble Pouch quality is poor',
+    issue6:        'Thermal Bag quality is poor',
+    issue7:        'Extra Brown Bag Used for SIOC item',
+    sizeLabel:     'Select bag size',
+    size1:         'Small Brown Bag',
+    size2:         'Large Brown Bag',
+    countryLabel:  'Choose the country',
+    commentsLabel: 'Tell us more about what happened',
+    optional:      'optional',
+    submitBtn:     'Submit Feedback →',
+    successTitle:  'Feedback Submitted!',
+    successMsg:    'Your packaging feedback has been recorded and will help improve quality across AMET hubs.',
+    submitAnother: 'Submit Another Response',
+    cancel:        '✕  Cancel',
+    scanInit:      'Starting camera…',
+    scanReady:     'Align barcode within the orange frame',
+    scanDenied:    'Camera not available. Please type SPOO# manually.',
+    scanned:       '✓ SPOO# scanned: ',
+    photoCount:    (n) => n + ' photo' + (n > 1 ? 's' : '') + ' attached',
+    errPhoto:      '⚠ Please attach at least one photo.',
+    errSpoo:       '⚠ Please enter or scan the SPOO#.',
+    errIssue:      '⚠ Please select what went wrong.',
+    errSize:       '⚠ Please select a bag size.',
+    errCountry:    '⚠ Please choose a country.',
+    submitting:    'Submitting…',
+    submitFail:    'Submission failed. Please try again.',
+  },
+  ar: {
+    hTitle:        'استبيان جودة التغليف',
+    progLbl:       'الإتمام',
+    photoLabel:    'التقط / ارفع صورة للضرر',
+    takePhoto:     'التقط صورة',
+    useCamera:     'استخدم الكاميرا',
+    uploadImg:     'رفع صورة',
+    fromGallery:   'من المعرض / الملفات',
+    spooLabel:     'رقم SPOO للكيس القديم التالف',
+    spooPlaceholder:'امسح الباركود أو اكتب SPOO#',
+    scanHint:      'اضغط زر المسح لاستخدام الكاميرا، أو اكتب يدوياً',
+    issueLabel:    'ما المشكلة؟',
+    issue1:        'تلف الكيس البني بسبب مادة مبردة',
+    issue2:        'تمزق الكيس البني بسبب أغراض ثقيلة',
+    issue3:        'انكسار مقبض الكيس',
+    issue4:        'جودة شريط اللصق رديئة',
+    issue5:        'جودة كيس الفقاعات رديئة',
+    issue6:        'جودة الكيس الحراري رديئة',
+    issue7:        'استخدام كيس بني إضافي لعنصر SIOC',
+    sizeLabel:     'اختر حجم الكيس',
+    size1:         'كيس بني صغير',
+    size2:         'كيس بني كبير',
+    countryLabel:  'اختر الدولة',
+    commentsLabel: 'أخبرنا أكثر عما حدث',
+    optional:      'اختياري',
+    submitBtn:     'إرسال الملاحظات ←',
+    successTitle:  'تم الإرسال!',
+    successMsg:    'تم تسجيل ملاحظاتك حول التغليف وستساعد على تحسين الجودة عبر مراكز AMET.',
+    submitAnother: 'إرسال استجابة أخرى',
+    cancel:        '✕  إلغاء',
+    scanInit:      'جارٍ تشغيل الكاميرا…',
+    scanReady:     'ضع الباركود داخل الإطار البرتقالي',
+    scanDenied:    'الكاميرا غير متاحة. يرجى كتابة SPOO# يدوياً.',
+    scanned:       '✓ تم مسح SPOO#: ',
+    photoCount:    (n) => 'تم إرفاق ' + n + ' صورة',
+    errPhoto:      '⚠ يرجى إرفاق صورة واحدة على الأقل.',
+    errSpoo:       '⚠ يرجى إدخال أو مسح رقم SPOO#.',
+    errIssue:      '⚠ يرجى تحديد المشكلة.',
+    errSize:       '⚠ يرجى اختيار حجم الكيس.',
+    errCountry:    '⚠ يرجى اختيار الدولة.',
+    submitting:    'جارٍ الإرسال…',
+    submitFail:    'فشل الإرسال. يرجى المحاولة مرة أخرى.',
+  }
+};
+
+let lang = 'en';
+let photoFiles = [];
+let codeReader = null;
+
+// ── LANGUAGE ───────────────────────────────────────────
+function setLang(l) {
+  lang = l;
+  const isAr = l === 'ar';
+  document.documentElement.lang = l;
+  document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+  document.body.classList.toggle('ar', isAr);
+  document.getElementById('btnEN').classList.toggle('active', !isAr);
+  document.getElementById('btnAR').classList.toggle('active', isAr);
+
+  const t = T[l];
+
+  // Update all data-t elements
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if (t[key] && typeof t[key] === 'string') el.textContent = t[key];
+  });
+
+  // Special elements
+  document.getElementById('hTitle').textContent = t.hTitle;
+  document.getElementById('progLbl').textContent = t.progLbl;
+  document.getElementById('spooInput').placeholder = t.spooPlaceholder;
+  document.getElementById('comments').placeholder = isAr ? 'اكتب أي تفاصيل إضافية…' : 'Describe what happened in more detail…';
+  document.getElementById('scanStatus').textContent = '';
+
+  // Re-render photo badge if photos exist
+  if (photoFiles.length) updateBadge();
+}
+
+// ── PHOTOS ─────────────────────────────────────────────
+function handlePhotos(e) {
+  Array.from(e.target.files).forEach(file => {
+    if (photoFiles.length >= 5) return;
+    photoFiles.push(file);
+    const idx = photoFiles.length - 1;
+    const r = new FileReader();
+    r.onload = ev => addPreview(ev.target.result, idx);
+    r.readAsDataURL(file);
+  });
+  e.target.value = '';
+  clearErr('photo');
+  updateProg();
+}
+function addPreview(src, idx) {
+  const g = document.getElementById('prevGrid');
+  const d = document.createElement('div');
+  d.className = 'prev-item'; d.id = 'pi' + idx;
+  d.innerHTML = `<img src="${src}" alt="photo"/><button class="rm-photo" onclick="removePhoto(${idx})">✕</button>`;
+  g.appendChild(d);
+  updateBadge();
+}
+function removePhoto(idx) {
+  photoFiles.splice(idx, 1);
+  document.getElementById('prevGrid').innerHTML = '';
+  photoFiles.forEach((f, i) => { const r = new FileReader(); r.onload = ev => addPreview(ev.target.result, i); r.readAsDataURL(f); });
+  updateBadge(); updateProg();
+}
+function updateBadge() {
+  const b = document.getElementById('photoBadge');
+  if (photoFiles.length > 0) {
+    b.style.display = 'inline-flex';
+    document.getElementById('photoTxt').textContent = T[lang].photoCount(photoFiles.length);
+  } else { b.style.display = 'none'; }
+}
+
+// ── RADIO ──────────────────────────────────────────────
+function pick(el, grp, errKey) {
+  document.querySelectorAll('#' + grp + ' .ropt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel'); el.querySelector('input').checked = true;
+  clearErr(errKey); updateProg();
+}
+
+// ── PROGRESS ───────────────────────────────────────────
+function updateProg() {
+  let d = 0;
+  if (photoFiles.length) d++;
+  if (document.getElementById('spooInput').value.trim()) d++;
+  if (document.querySelector('#issueGroup .sel')) d++;
+  if (document.querySelector('#sizeGroup .sel')) d++;
+  if (document.querySelector('#countryGroup .sel')) d++;
+  const p = Math.round(d / 5 * 100);
+  document.getElementById('progFill').style.width = p + '%';
+  document.getElementById('pctLabel').textContent = p + '%';
+}
+
+// ── SCANNER (ZXing — works on iOS Safari + Android) ────
+async function openScanner() {
+  document.getElementById('scanModal').classList.add('active');
+  document.getElementById('scanStatus').textContent = T[lang].scanInit;
+  try {
+    codeReader = new ZXingBrowser.BrowserMultiFormatReader();
+    const devices = await ZXingBrowser.BrowserMultiFormatReader.listVideoInputDevices();
+    let deviceId;
+    if (devices.length > 1) {
+      const back = devices.find(d => /back|rear|environment/i.test(d.label));
+      deviceId = back ? back.deviceId : devices[devices.length - 1].deviceId;
+    }
+    document.getElementById('scanStatus').textContent = T[lang].scanReady;
+    await codeReader.decodeFromVideoDevice(deviceId, 'scanVideo', (result) => {
+      if (result) {
+        const val = result.getText();
+        document.getElementById('spooInput').value = val;
+        closeScanner(); clearErr('spoo'); updateProg();
+        showToast(T[lang].scanned + val);
+      }
+    });
+  } catch (ex) {
+    document.getElementById('scanStatus').textContent = '⚠ Camera unavailable';
+    setTimeout(() => { closeScanner(); showToast(T[lang].scanDenied, true); }, 1200);
+  }
+}
+function closeScanner() {
+  if (codeReader) { codeReader.reset(); codeReader = null; }
+  document.getElementById('scanModal').classList.remove('active');
+}
+
+// ── VALIDATION ─────────────────────────────────────────
+function validate() {
+  let ok = true;
+  const t = T[lang];
+  if (!photoFiles.length)                                  { showErr('photo', t.errPhoto);   ok = false; }
+  if (!document.getElementById('spooInput').value.trim()) { showErr('spoo',  t.errSpoo);    ok = false; }
+  if (!document.querySelector('#issueGroup .sel'))         { showErr('issue', t.errIssue);   ok = false; }
+  if (!document.querySelector('#sizeGroup .sel'))          { showErr('size',  t.errSize);    ok = false; }
+  if (!document.querySelector('#countryGroup .sel'))       { showErr('country', t.errCountry); ok = false; }
+  return ok;
+}
+function showErr(f, m) {
+  const e = document.getElementById('err-' + f); if (e) { e.textContent = m; e.style.display = 'block'; }
+  const c = document.getElementById('card-' + f); if (c) c.classList.add('has-error');
+}
+function clearErr(f) {
+  const e = document.getElementById('err-' + f); if (e) e.style.display = 'none';
+  const c = document.getElementById('card-' + f); if (c) c.classList.remove('has-error');
+}
+
+// ── SUBMIT ─────────────────────────────────────────────
+async function submitForm() {
+  if (!validate()) { document.querySelector('.has-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+  const btn = document.getElementById('submitBtn'), sp = document.getElementById('spinner'), lb = document.getElementById('submitLabel');
+  btn.disabled = true; sp.style.display = 'block'; lb.textContent = T[lang].submitting;
+
+  const fd = new FormData();
+  fd.append('timestamp', new Date().toISOString());
+  fd.append('spoo',     document.getElementById('spooInput').value.trim());
+  fd.append('issue',    document.querySelector('#issueGroup .sel input').value);
+  fd.append('bagSize',  document.querySelector('#sizeGroup .sel input').value);
+  fd.append('country',  document.querySelector('#countryGroup .sel input').value);
+  fd.append('comments', document.getElementById('comments').value.trim());
+  fd.append('language', lang.toUpperCase());
+  photoFiles.forEach((f, i) => fd.append('photo_' + i, f, f.name));
+
+  try {
+    if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') { await new Promise(r => setTimeout(r, 1300)); onSuccess(); return; }
+    const res = await fetch(SCRIPT_URL, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.status === 'success') onSuccess(); else throw new Error(data.message);
+  } catch (err) {
+    showToast(T[lang].submitFail, true);
+    btn.disabled = false; sp.style.display = 'none'; lb.textContent = T[lang].submitBtn;
+  }
+}
+function onSuccess() {
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function resetForm() {
+  photoFiles = [];
+  document.getElementById('prevGrid').innerHTML = '';
+  document.getElementById('photoBadge').style.display = 'none';
+  document.getElementById('spooInput').value = '';
+  document.querySelectorAll('.ropt').forEach(o => { o.classList.remove('sel'); o.querySelector('input').checked = false; });
+  document.getElementById('comments').value = '';
+  document.getElementById('progFill').style.width = '0%';
+  document.getElementById('pctLabel').textContent = '0%';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('submitLabel').textContent = T[lang].submitBtn;
+  document.getElementById('successScreen').style.display = 'none';
+  document.getElementById('formView').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── TOAST ──────────────────────────────────────────────
+function showToast(msg, isErr = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast' + (isErr ? ' err' : '');
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// init placeholder
+document.getElementById('spooInput').placeholder = T.en.spooPlaceholder;
+document.getElementById('comments').placeholder = 'Describe what happened in more detail…';
+</script>
+</body>
+</html>

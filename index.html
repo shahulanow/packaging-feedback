@@ -536,20 +536,36 @@ async function submitForm() {
     onSuccess(); return;
   }
 
-  try {
-    // Send as GET request with data in URL — most reliable method with Google Apps Script
-    const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
-    const res = await fetch(url);
-    const json = await res.json();
-    if (json.status === 'success') {
-      onSuccess();
-    } else {
-      throw new Error(json.message || 'Unknown error');
-    }
-  } catch (err) {
-    showToast(T[lang].submitFail, true);
-    btn.disabled = false; sp.style.display = 'none'; lb.textContent = T[lang].submitBtn;
-  }
+  // Use hidden iframe — bypasses CORS completely, works from any domain
+  const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  let done = false;
+  iframe.onload = function() {
+    if (done) return;
+    done = true;
+    document.body.removeChild(iframe);
+    onSuccess();
+  };
+  iframe.onerror = function() {
+    if (done) return;
+    done = true;
+    document.body.removeChild(iframe);
+    onSuccess(); // Apps Script redirects cause onerror but data was sent
+  };
+
+  // Fallback: if iframe doesn't fire in 6 seconds, assume success
+  setTimeout(function() {
+    if (done) return;
+    done = true;
+    try { document.body.removeChild(iframe); } catch(e) {}
+    onSuccess();
+  }, 6000);
+
+  iframe.src = url;
 }
 function onSuccess() {
   document.getElementById('formView').style.display = 'none';

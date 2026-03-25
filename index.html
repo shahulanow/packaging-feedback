@@ -286,7 +286,7 @@ body.ar .spoo-in{padding:12px 14px 12px 52px}
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBAdBlJrq3YaufyQW_PsZUCDPo4SC-5S1Q6u-FNyXGyOpsoO5l04LzLpv1dCrOgVVLNA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8aYsai1Z-b4Va01r4iTfnTDXY9RHPf6YpAvxUxdb0uNw-GtRd3klHZutBv9QOHlIh/exec';
 
 const T = {
   en: {
@@ -531,41 +531,50 @@ async function submitForm() {
     language:  lang.toUpperCase()
   };
 
-  if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyBAdBlJrq3YaufyQW_PsZUCDPo4SC-5S1Q6u-FNyXGyOpsoO5l04LzLpv1dCrOgVVLNA/exec') {
+  if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbx8aYsai1Z-b4Va01r4iTfnTDXY9RHPf6YpAvxUxdb0uNw-GtRd3klHZutBv9QOHlIh/exec') {
     await new Promise(r => setTimeout(r, 1300));
     onSuccess(); return;
   }
 
-  // Use hidden iframe — bypasses CORS completely, works from any domain
-  const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
-
+  // Submit via hidden HTML form — no CORS issues, works from any domain
   const iframe = document.createElement('iframe');
+  iframe.name = 'hidden_submit';
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
 
-  let done = false;
-  iframe.onload = function() {
-    if (done) return;
-    done = true;
-    document.body.removeChild(iframe);
-    onSuccess();
-  };
-  iframe.onerror = function() {
-    if (done) return;
-    done = true;
-    document.body.removeChild(iframe);
-    onSuccess(); // Apps Script redirects cause onerror but data was sent
+  const form = document.createElement('form');
+  form.method = 'GET';
+  form.action = SCRIPT_URL;
+  form.target = 'hidden_submit';
+
+  // Add each field as individual hidden inputs
+  const fields = {
+    timestamp: payload.timestamp,
+    spoo:      payload.spoo,
+    issue:     payload.issue,
+    bagSize:   payload.bagSize,
+    country:   payload.country,
+    comments:  payload.comments,
+    language:  payload.language
   };
 
-  // Fallback: if iframe doesn't fire in 6 seconds, assume success
+  Object.entries(fields).forEach(function([key, val]) {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = key;
+    input.value = val;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+
+  // Clean up and show success after 3 seconds
   setTimeout(function() {
-    if (done) return;
-    done = true;
+    try { document.body.removeChild(form); } catch(e) {}
     try { document.body.removeChild(iframe); } catch(e) {}
     onSuccess();
-  }, 6000);
-
-  iframe.src = url;
+  }, 3000);
 }
 function onSuccess() {
   document.getElementById('formView').style.display = 'none';
